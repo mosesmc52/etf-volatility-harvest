@@ -43,7 +43,7 @@ DRIFT_ONLY_WHEN_ACTIVE = str2bool(os.getenv("DRIFT_ONLY_WHEN_ACTIVE", True))
 FORCED_REBALANCED = str2bool(os.getenv("FORCED_REBALANCED", False))
 IS_REBALANCE_DATE = os.getenv("IS_REBALANCE_DATE", "W-FRI")
 
-EQUITY_FRACTION = getenv_int(os.getenv("EQUITY_FRACTION"), 1)
+EQUITY_FRACTION = getenv_float(os.getenv("EQUITY_FRACTION"), 1.0)
 VOL_LOOKBACK = getenv_float(os.getenv("VOL_LOOKBACK"), 40)
 TARGET_VOL = getenv_float(os.getenv("TARGET_VOL"), 0.08)
 LEVERAGE_CAP = getenv_float(os.getenv("LEVERAGE_CAP"), 2.0)

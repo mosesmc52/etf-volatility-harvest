@@ -106,7 +106,6 @@ jobs:
                 AWS_SES_REGION_NAME=${AWS_SES_REGION_NAME}
                 AWS_SES_ACCESS_KEY_ID=${AWS_SES_ACCESS_KEY_ID}
                 AWS_SES_SECRET_ACCESS_KEY=${AWS_SES_SECRET_ACCESS_KEY}
-                USE_DYNAMIC_VT=${USE_DYNAMIC_VT}
                 ALPACA_PAPER=${ALPACA_PAPER}
 
             - path: /opt/job/run.sh
