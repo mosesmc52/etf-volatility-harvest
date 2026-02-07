@@ -27,7 +27,7 @@ jobs:
 
       # The container image you want to run
       # Change this to your actual package name in GHCR
-      JOB_IMAGE: ghcr.io/mosesmc52/etf-trend-rp-vt:latest
+      JOB_IMAGE: ghcr.io/mosesmc52/etf-volatility-harvest:latest
 
       # Runtime settings
       TZ: ${{ vars.TZ }}
@@ -66,7 +66,6 @@ jobs:
           EMAIL_POSITIONS: ${{ vars.EMAIL_POSITIONS }}
           AWS_SES_REGION_NAME: ${{ vars.AWS_SES_REGION_NAME }}
           ALPACA_PAPER: ${{ vars.ALPACA_PAPER }}
-          USE_DYNAMIC_VT: ${{ vars.USE_DYNAMIC_VT }}
 
         run: |
           set -euo pipefail
