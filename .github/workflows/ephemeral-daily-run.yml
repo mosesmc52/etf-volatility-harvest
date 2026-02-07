@@ -7,7 +7,7 @@ on:
 
 jobs:
   run_ephemeral:
-    environment: Staging
+    environment: Production
     runs-on: ubuntu-latest
 
     permissions:
