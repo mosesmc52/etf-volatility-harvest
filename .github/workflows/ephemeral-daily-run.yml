@@ -66,6 +66,7 @@ jobs:
           EMAIL_POSITIONS: ${{ vars.EMAIL_POSITIONS }}
           AWS_SES_REGION_NAME: ${{ vars.AWS_SES_REGION_NAME }}
           ALPACA_PAPER: ${{ vars.ALPACA_PAPER }}
+          EQUITY_FRACTION: ${{ vars.EQUITY_FRACTION }}
 
         run: |
           set -euo pipefail
@@ -107,6 +108,7 @@ jobs:
                 AWS_SES_ACCESS_KEY_ID=${AWS_SES_ACCESS_KEY_ID}
                 AWS_SES_SECRET_ACCESS_KEY=${AWS_SES_SECRET_ACCESS_KEY}
                 ALPACA_PAPER=${ALPACA_PAPER}
+                EQUITY_FRACTION=${EQUITY_FRACTION}
 
             - path: /opt/job/run.sh
               permissions: "0700"
