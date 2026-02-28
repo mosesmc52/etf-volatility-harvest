@@ -11,12 +11,30 @@ from helpers import (
     str2bool,
 )
 from log import log
+from regime_detector import RegimeDetector
 from SES import AmazonSES
 
 load_dotenv(find_dotenv())
 
+USE_REGIME_DETECTOR = str2bool(os.getenv("USE_REGIME_DETECTOR", False))
+if USE_REGIME_DETECTOR:
+    detector = RegimeDetector(
+        ema_span=60,
+        lookback=252,
+        vix_high_pct=0.70,
+        spread_wide_pct=0.70,
+        credit_mode="ratio",
+        shift_regime_by_one_day=True,
+    )
+    as_of = datetime.now()
+    result = detector.dominant_regime(as_of=as_of)
+    if result["dominant_regime"] == "fragile":
+        EQUITY_FRACTION = 0.2
+    else:
+        EQUITY_FRACTION = 0.0
 
-EQUITY_FRACTION = getenv_float("EQUITY_FRACTION", 1)
+else:
+    EQUITY_FRACTION = getenv_float("EQUITY_FRACTION", 1)
 
 LIQUIDATION_SYMBOLS_TO_IGNORE = None
 
