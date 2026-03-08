@@ -67,6 +67,7 @@ jobs:
           AWS_SES_REGION_NAME: ${{ vars.AWS_SES_REGION_NAME }}
           ALPACA_PAPER: ${{ vars.ALPACA_PAPER }}
           EQUITY_FRACTION: ${{ vars.EQUITY_FRACTION }}
+          USE_REGIME_DETECTOR: ${{ vars.USE_REGIME_DETECTOR }}
 
         run: |
           set -euo pipefail
@@ -109,6 +110,7 @@ jobs:
                 AWS_SES_SECRET_ACCESS_KEY=${AWS_SES_SECRET_ACCESS_KEY}
                 ALPACA_PAPER=${ALPACA_PAPER}
                 EQUITY_FRACTION=${EQUITY_FRACTION}
+                USE_REGIME_DETECTOR=${USE_REGIME_DETECTOR}
 
             - path: /opt/job/run.sh
               permissions: "0700"
