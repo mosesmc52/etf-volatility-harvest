@@ -286,19 +286,20 @@ def _compute_target_weights_and_leverage(
 
 
 def _should_trade_today(
-    px_index: pd.DatetimeIndex, asof: pd.Timestamp, rule: str
+    px_index: pd.DatetimeIndex, on_date: pd.Timestamp, rule: str
 ) -> bool:
     """
-    Decide if `asof` is a rebalance date according to `rule`,
+    Decide if `on_date` is a rebalance date according to `rule`,
     using the *actual* trading dates available in px_index.
 
     rule examples: "W-FRI", "W-MON", "M"
     """
+    on_date = pd.Timestamp(on_date).normalize()
     s = pd.Series(1.0, index=px_index).sort_index()
     rb_dates = s.resample(rule).last().index
     # only consider rebalance dates that are actual trading dates
     rb_dates = rb_dates.intersection(px_index)
-    return asof in set(rb_dates)
+    return on_date in set(rb_dates)
 
 
 def _current_portfolio_weights(
@@ -422,7 +423,8 @@ def run_single_iteration(
     # --------------------------------------------
     # Trade gating: calendar OR drift OR forced
     # --------------------------------------------
-    should_trade_calendar = _should_trade_today(px.index, asof, is_rebalance_date)
+    run_date = pd.Timestamp(datetime.utcnow().date()).normalize()
+    should_trade_calendar = _should_trade_today(px.index, run_date, is_rebalance_date)
 
     drift: Optional[float] = None
     should_trade_drift = False
@@ -436,6 +438,7 @@ def run_single_iteration(
         else:
             should_trade_drift = drift >= float(drift_threshold)
 
+    liquidation_mode = float(equity_fraction) <= 0.0
     should_trade = bool(forced_rebalance or should_trade_calendar or should_trade_drift)
 
     # --------------------------------------------
@@ -443,6 +446,7 @@ def run_single_iteration(
     # --------------------------------------------
     base_out = {
         "asof": asof,
+        "run_date": run_date,
         "forced_rebalance": forced_rebalance,
         "should_trade": should_trade,
         "should_trade_calendar": bool(should_trade_calendar),
@@ -457,6 +461,7 @@ def run_single_iteration(
         "leverage": lev,
         "last_close": last_close.to_dict(),
         "equity_fraction": float(equity_fraction),
+        "liquidation_mode": liquidation_mode,
         "Params": {
             "tickers": tuple([t.upper() for t in tickers]),
             "vol_lookback": vol_lookback,
@@ -495,7 +500,7 @@ def run_single_iteration(
                     f"Skipped trading: forced={forced_rebalance}, "
                     f"calendar={should_trade_calendar} (rule={is_rebalance_date}), "
                     f"drift={drift} (thr={drift_threshold}, only_when_active={drift_only_when_active}), "
-                    f"active={active}."
+                    f"active={active}, liquidation_mode={liquidation_mode}."
                 ),
             }
         )
@@ -542,7 +547,8 @@ def run_single_iteration(
             "execution": executions,
             "note": (
                 f"Traded: forced={forced_rebalance}, calendar={should_trade_calendar}, "
-                f"drift_trigger={should_trade_drift}, drift={drift}."
+                f"drift_trigger={should_trade_drift}, drift={drift}, "
+                f"liquidation_mode={liquidation_mode}."
             ),
         }
     )

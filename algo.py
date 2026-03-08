@@ -17,18 +17,22 @@ from SES import AmazonSES
 load_dotenv(find_dotenv())
 
 USE_REGIME_DETECTOR = str2bool(os.getenv("USE_REGIME_DETECTOR", False))
+
+detector = RegimeDetector(
+    ema_span=60,
+    lookback=252,
+    vix_high_pct=0.70,
+    spread_wide_pct=0.70,
+    credit_mode="ratio",
+    shift_regime_by_one_day=True,
+)
+as_of = datetime.now()
+result = detector.dominant_regime(as_of=as_of)
+regime = result["dominant_regime"]
+
 if USE_REGIME_DETECTOR:
-    detector = RegimeDetector(
-        ema_span=60,
-        lookback=252,
-        vix_high_pct=0.70,
-        spread_wide_pct=0.70,
-        credit_mode="ratio",
-        shift_regime_by_one_day=True,
-    )
-    as_of = datetime.now()
-    result = detector.dominant_regime(as_of=as_of)
-    if result["dominant_regime"] == "fragile":
+
+    if regime == "fragile":
         EQUITY_FRACTION = 0.2
     else:
         EQUITY_FRACTION = 0.0
@@ -61,7 +65,7 @@ DRIFT_ONLY_WHEN_ACTIVE = str2bool(os.getenv("DRIFT_ONLY_WHEN_ACTIVE", True))
 FORCED_REBALANCED = str2bool(os.getenv("FORCED_REBALANCED", False))
 IS_REBALANCE_DATE = os.getenv("IS_REBALANCE_DATE", "W-FRI")
 
-EQUITY_FRACTION = getenv_float(os.getenv("EQUITY_FRACTION"), 1.0)
+
 VOL_LOOKBACK = getenv_float(os.getenv("VOL_LOOKBACK"), 40)
 TARGET_VOL = getenv_float(os.getenv("TARGET_VOL"), 0.08)
 LEVERAGE_CAP = getenv_float(os.getenv("LEVERAGE_CAP"), 2.0)
@@ -103,8 +107,8 @@ portfolio = run_single_iteration(
 EMAIL_POSITIONS = str2bool(os.getenv("EMAIL_POSITIONS", False))
 
 
-message_body_html = f"Portfolio Value: {portfolio_value}<br>"
-message_body_plain = f"Portfolio Value: {portfolio_value}\n"
+message_body_html = f"Portfolio Value: {portfolio_value} | regime = { regime.replace("_", " ").title() }<br>"
+message_body_plain = f"Portfolio Value: {portfolio_value} | regime = { regime.replace("_", " ").title() }\n"
 
 out = print_orders_table(portfolio)
 
