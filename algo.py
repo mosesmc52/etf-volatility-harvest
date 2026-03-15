@@ -97,7 +97,7 @@ if SYNC_STRATEGY_JSON_TO_SPACES:
     upload_file_to_digitalocean_spaces(
         file_path=output_path,
         region=os.environ.get("SPACES_REGION"),
-        object_key=f"{os.environ.get("SPACES_OBJECT_KEY_PATH")}/{output_path}",
+        object_key=f"{os.environ.get('SPACES_OBJECT_KEY_PATH')}/{output_path}",
         bucket_name=os.environ.get("SPACES_BUCKET"),
         access_key=os.environ.get("SPACES_KEY"),
         secret_key=os.environ.get("SPACES_SECRET"),
