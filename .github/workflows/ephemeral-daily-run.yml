@@ -60,6 +60,8 @@ jobs:
           FROM_ADDRESS: ${{ secrets.FROM_ADDRESS }}
           AWS_SES_ACCESS_KEY_ID: ${{ secrets.AWS_SES_ACCESS_KEY_ID }}
           AWS_SES_SECRET_ACCESS_KEY: ${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}
+          SPACES_KEY: ${{ secrets.SPACES_KEY }}
+          SPACES_SECRET: ${{ secrets.SPACES_SECRET }}
 
           ALPACA_BASE_URL: ${{ vars.ALPACA_BASE_URL }}
           LIVE_TRADE: ${{ vars.LIVE_TRADE }}
@@ -67,6 +69,10 @@ jobs:
           AWS_SES_REGION_NAME: ${{ vars.AWS_SES_REGION_NAME }}
           ALPACA_PAPER: ${{ vars.ALPACA_PAPER }}
           EQUITY_FRACTION: ${{ vars.EQUITY_FRACTION }}
+          SYNC_STRATEGY_JSON_TO_SPACES: ${{ vars.SYNC_STRATEGY_JSON_TO_SPACES }}
+          SPACES_BUCKET: ${{ vars.SPACES_BUCKET }}
+          SPACES_REGION: ${{ vars.SPACES_REGION }}
+          SPACES_OBJECT_KEY_PATH: ${{ vars.SPACES_OBJECT_KEY_PATH }}
 
         run: |
           set -euo pipefail
@@ -109,7 +115,12 @@ jobs:
                 AWS_SES_SECRET_ACCESS_KEY=${AWS_SES_SECRET_ACCESS_KEY}
                 ALPACA_PAPER=${ALPACA_PAPER}
                 EQUITY_FRACTION=${EQUITY_FRACTION}
-
+                SPACES_KEY=${SPACES_KEY}
+                SPACES_SECRET=${SPACES_SECRET}
+                SYNC_STRATEGY_JSON_TO_SPACES=${SYNC_STRATEGY_JSON_TO_SPACES}
+                SPACES_BUCKET=${SPACES_BUCKET}
+                SPACES_REGION=${SPACES_REGION}
+                SPACES_OBJECT_KEY_PATH=${SPACES_OBJECT_KEY_PATH}
             - path: /opt/job/run.sh
               permissions: "0700"
               content: |

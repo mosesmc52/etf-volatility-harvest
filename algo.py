@@ -4,11 +4,13 @@ from datetime import datetime
 from alpaca_adapter import AlpacaAPI
 from dotenv import find_dotenv, load_dotenv
 from helpers import (
+    export_strategy_json,
     getenv_float,
     getenv_int,
     print_orders_table,
     run_single_iteration,
     str2bool,
+    upload_file_to_digitalocean_spaces,
 )
 from log import log
 from SES import AmazonSES
@@ -53,6 +55,10 @@ HIGH_VOL_THESHOLD = getenv_float(os.getenv("HIGH_VOL_THESHOLD"), 0.22)
 
 DRIFT_THRESHOLD = getenv_float(os.getenv("DRIFT_THRESHOLD"), 0.08)
 
+SYNC_STRATEGY_JSON_TO_SPACES = str2bool(
+    os.getenv("SYNC_STRATEGY_JSON_TO_SPACES", False)
+)
+
 
 api = AlpacaAPI.from_env(
     api_key=alpaca_key,
@@ -80,6 +86,27 @@ portfolio = run_single_iteration(
     forced_rebalance=FORCED_REBALANCED,
     is_rebalance_date=IS_REBALANCE_DATE,
 )
+
+if SYNC_STRATEGY_JSON_TO_SPACES:
+
+    output_path = "etf-volatility-harvest.json"
+    log(f"Export Strategy Results: {output_path}", "info")
+    export_strategy_json(
+        result=portfolio,
+        output_path=output_path,
+        strategy_name="vol-harvest",
+    )
+
+    log(f"Save to Spaces: {os.environ.get('SPACES_BUCKET')}", "info")
+    upload_file_to_digitalocean_spaces(
+        file_path=output_path,
+        region=os.environ.get("SPACES_REGION"),
+        object_key=f"{os.environ.get('SPACES_OBJECT_KEY_PATH')}/{output_path}",
+        bucket_name=os.environ.get("SPACES_BUCKET"),
+        access_key=os.environ.get("SPACES_KEY"),
+        secret_key=os.environ.get("SPACES_SECRET"),
+    )
+
 
 # # Email Positions
 EMAIL_POSITIONS = str2bool(os.getenv("EMAIL_POSITIONS", False))
