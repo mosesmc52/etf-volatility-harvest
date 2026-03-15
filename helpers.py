@@ -6,14 +6,13 @@ import json
 import math
 import os
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, TextIO, Tuple
+from typing import Dict, Optional, TextIO
 
+import boto3
 import numpy as np
 import pandas as pd
-import pandas_market_calendars as mcal
 from alpaca.common.exceptions import APIError
 from alpaca.data.timeframe import TimeFrame
-from alpaca_adapter import AlpacaAPI
 
 # ---------- Config (match your backtest) ----------
 
@@ -609,3 +608,144 @@ def print_orders_table(result: dict, stream: Optional[TextIO] = None) -> str:
         print(out, file=stream)
 
     return out
+
+
+def _infer_holding_period_days(rule: str | None) -> int | None:
+    if not rule:
+        return None
+
+    rule = str(rule).upper()
+    if rule.startswith("W-"):
+        return 7
+    if rule in {"D", "B"}:
+        return 1
+    if rule.startswith("M"):
+        return 31
+    if rule.startswith("Q"):
+        return 92
+    return None
+
+
+def _to_float(value, default: float = 0.0) -> float:
+    try:
+        if value is None or (isinstance(value, float) and not math.isfinite(value)):
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def export_strategy_json(
+    result: dict,
+    output_path: str = "strategy_export.json",
+    *,
+    strategy_name: str = "etf-volatility-harvest",
+) -> dict:
+    """
+    Export a run_single_iteration() result as a compact strategy JSON payload.
+
+    Mapping:
+    - `positions[].target_weight` is leverage-adjusted exposure per symbol.
+    - `capital_requested` is the unlevered account allocation fraction.
+    - `gross_exposure` / `net_exposure` are derived from exported positions.
+    """
+
+    weights = result.get("weights") or {}
+    leverage = _to_float(result.get("leverage"), default=0.0)
+    positions = []
+
+    for symbol, weight in weights.items():
+        target_weight = _to_float(weight) * leverage
+        if abs(target_weight) <= 1e-12:
+            continue
+        positions.append(
+            {
+                "symbol": str(symbol).upper(),
+                "target_weight": round(target_weight, 10),
+            }
+        )
+
+    positions.sort(key=lambda item: item["symbol"])
+
+    capital_requested = _to_float(result.get("equity_fraction"), default=0.0)
+    account_equity = _to_float(result.get("account_equity"), default=0.0)
+    alloc_equity = _to_float(result.get("alloc_equity"), default=0.0)
+    if account_equity > 0.0 and alloc_equity > 0.0:
+        capital_requested = alloc_equity / account_equity
+
+    gross_exposure = round(sum(abs(p["target_weight"]) for p in positions), 10)
+    net_exposure = round(sum(p["target_weight"] for p in positions), 10)
+
+    payload = {
+        "strategy": strategy_name,
+        "active": bool(_to_float(result.get("active")) > 0.5),
+        "capital_requested": round(capital_requested, 10),
+        "positions": positions,
+        "gross_exposure": gross_exposure,
+        "net_exposure": net_exposure,
+        "holding_period_days": _infer_holding_period_days(result.get("rebalance_rule")),
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=4)
+        f.write("\n")
+
+    return payload
+
+
+def upload_file_to_digitalocean_spaces(
+    file_path: str,
+    *,
+    bucket_name: str,
+    region: str,
+    object_key: str | None = None,
+    access_key: str | None = None,
+    secret_key: str | None = None,
+    content_type: str = "application/json",
+    acl: str | None = None,
+) -> dict:
+    """Upload a local file to DigitalOcean Spaces via the S3-compatible API."""
+
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File does not exist: {file_path}")
+    if not os.path.isfile(file_path):
+        raise IsADirectoryError(
+            f"Expected a file path, got a directory or non-file path: {file_path}"
+        )
+    if not bucket_name:
+        raise ValueError("bucket_name is required")
+    if not region:
+        raise ValueError("region is required")
+
+    spaces_key = access_key or os.getenv("DO_SPACES_KEY")
+    spaces_secret = secret_key or os.getenv("DO_SPACES_SECRET")
+    if not spaces_key or not spaces_secret:
+        raise ValueError(
+            "DigitalOcean Spaces credentials are required via arguments or "
+            "DO_SPACES_KEY / DO_SPACES_SECRET environment variables."
+        )
+
+    key = object_key or os.path.basename(file_path)
+    endpoint_url = f"https://{region}.digitaloceanspaces.com"
+
+    client = boto3.client(
+        "s3",
+        region_name=region,
+        endpoint_url=endpoint_url,
+        aws_access_key_id=spaces_key,
+        aws_secret_access_key=spaces_secret,
+    )
+
+    extra_args = {"ContentType": content_type}
+    if acl:
+        extra_args["ACL"] = acl
+
+    client.upload_file(file_path, bucket_name, key, ExtraArgs=extra_args)
+
+    return {
+        "bucket": bucket_name,
+        "region": region,
+        "object_key": key,
+        "endpoint_url": endpoint_url,
+        "object_url": f"https://{bucket_name}.{region}.digitaloceanspaces.com/{key}",
+    }
