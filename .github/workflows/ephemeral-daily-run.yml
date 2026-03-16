@@ -56,8 +56,7 @@ jobs:
           # Your job secrets/vars (example set; adjust to your app)
           ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-          TO_ADDRESSES: ${{ secrets.TO_ADDRESSES }}
-          FROM_ADDRESS: ${{ secrets.FROM_ADDRESS }}
+
           AWS_SES_ACCESS_KEY_ID: ${{ secrets.AWS_SES_ACCESS_KEY_ID }}
           AWS_SES_SECRET_ACCESS_KEY: ${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}
           SPACES_KEY: ${{ secrets.SPACES_KEY }}
@@ -73,7 +72,8 @@ jobs:
           SPACES_BUCKET: ${{ vars.SPACES_BUCKET }}
           SPACES_REGION: ${{ vars.SPACES_REGION }}
           SPACES_OBJECT_KEY_PATH: ${{ vars.SPACES_OBJECT_KEY_PATH }}
-
+          TO_ADDRESSES: ${{ vars.TO_ADDRESSES }}
+          FROM_ADDRESS: ${{ vars.FROM_ADDRESS }}
         run: |
           set -euo pipefail
 
