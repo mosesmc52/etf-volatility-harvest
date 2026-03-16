@@ -138,7 +138,7 @@ if EMAIL_POSITIONS:
     status = "Live" if LIVE_TRADE else "Test"
     today = datetime.utcnow().strftime("%Y-%m-%d")
 
-    subject = f"Monthly Trend Algo Report - {status} - {today}"
+    subject = f"ETF Volatility Harvest Report - {status} - {today}"
 
     for to_address in TO_ADDRESSES:
         ses.send_html_email(
