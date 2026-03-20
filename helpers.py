@@ -640,6 +640,7 @@ def export_strategy_json(
     output_path: str = "strategy_export.json",
     *,
     strategy_name: str = "etf-volatility-harvest",
+    equity_fraction: float = 1.0,
 ) -> dict:
     """
     Export a run_single_iteration() result as a compact strategy JSON payload.
@@ -652,33 +653,34 @@ def export_strategy_json(
 
     weights = result.get("weights") or {}
     leverage = _to_float(result.get("leverage"), default=0.0)
+
+    capital_requested = _to_float(equity_fraction, default=0.0)
+
+    trade_today = capital_requested > 0.0
+    liquidate_when_inactive = capital_requested <= 0.0
+
     positions = []
+    if trade_today:
+        for symbol, weight in weights.items():
+            target_weight = _to_float(weight) * leverage
+            if abs(target_weight) <= 1e-12:
+                continue
+            positions.append(
+                {
+                    "symbol": str(symbol).upper(),
+                    "target_weight": round(target_weight, 10),
+                }
+            )
 
-    for symbol, weight in weights.items():
-        target_weight = _to_float(weight) * leverage
-        if abs(target_weight) <= 1e-12:
-            continue
-        positions.append(
-            {
-                "symbol": str(symbol).upper(),
-                "target_weight": round(target_weight, 10),
-            }
-        )
-
-    positions.sort(key=lambda item: item["symbol"])
-
-    capital_requested = _to_float(result.get("equity_fraction"), default=0.0)
-    account_equity = _to_float(result.get("account_equity"), default=0.0)
-    alloc_equity = _to_float(result.get("alloc_equity"), default=0.0)
-    if account_equity > 0.0 and alloc_equity > 0.0:
-        capital_requested = alloc_equity / account_equity
+        positions.sort(key=lambda item: item["symbol"])
 
     gross_exposure = round(sum(abs(p["target_weight"]) for p in positions), 10)
     net_exposure = round(sum(p["target_weight"] for p in positions), 10)
 
     payload = {
         "strategy": strategy_name,
-        "active": bool(_to_float(result.get("active")) > 0.5),
+        "trade_today": trade_today,
+        "liquidate_when_inactive": liquidate_when_inactive,
         "capital_requested": round(capital_requested, 10),
         "positions": positions,
         "gross_exposure": gross_exposure,

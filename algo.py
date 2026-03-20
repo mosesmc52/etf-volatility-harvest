@@ -95,6 +95,7 @@ if SYNC_STRATEGY_JSON_TO_SPACES:
         result=portfolio,
         output_path=output_path,
         strategy_name="vol-harvest",
+        equity_fraction=EQUITY_FRACTION,
     )
 
     log(f"Save to Spaces: {os.environ.get('SPACES_BUCKET')}", "info")
