@@ -1,0 +1,47 @@
+packages:
+  - name: launcher
+    functions:
+      - name: etf-volatility-harvest
+        runtime: python:default
+        limits:
+          timeout: 60000
+          memory: 512
+        web: false
+        environment:
+          TZ: "${TZ}"
+          GHCR_USERNAME: "${GHCR_USERNAME}"
+          GHCR_TOKEN: "${GHCR_TOKEN}"
+          DO_TOKEN: "${DO_TOKEN}"
+          DO_API: "https://api.digitalocean.com/v2"
+          DO_REGION: "${DO_REGION}"
+          DO_SIZE: "${DO_SIZE}"
+          DO_IMAGE: "${DO_IMAGE}"
+          DO_TAG: "ephemeral-daily-run"
+          DO_APP_TAG: "app-runners"
+          DO_SSH_KEY_ID: "${DO_SSH_KEY_ID}"
+          JOB_IMAGE: "ghcr.io/mosesmc52/etf-volatility-harvest:latest"
+          SYNC_STRATEGY_JSON_TO_SPACES: "${SYNC_STRATEGY_JSON_TO_SPACES}"
+          SPACES_SECRET: "${SPACES_SECRET}"
+          SPACES_KEY: "${SPACES_KEY}"
+          SPACES_BUCKET: "${SPACES_BUCKET}"
+          SPACES_REGION: "${SPACES_REGION}"
+          SPACES_OBJECT_KEY_PATH: "${SPACES_OBJECT_KEY_PATH}"
+          EMAIL_POSITIONS: "${EMAIL_POSITIONS}"
+          TO_ADDRESSES: "${TO_ADDRESSES}"
+          FROM_ADDRESS: "${FROM_ADDRESS}"
+          AWS_SES_REGION_NAME: "${AWS_SES_REGION_NAME}"
+          AWS_SES_ACCESS_KEY_ID: "${AWS_SES_ACCESS_KEY_ID}"
+          AWS_SES_SECRET_ACCESS_KEY: "${AWS_SES_SECRET_ACCESS_KEY}"
+          LIVE_TRADE: "${LIVE_TRADE}"
+          EQUITY_FRACTION: "${EQUITY_FRACTION}"
+          FORCED_REBALANCED: "${FORCED_REBALANCED}"
+          USE_REGIME_DETECTOR: "${USE_REGIME_DETECTOR}"
+          ALPACA_PAPER: "${ALPACA_PAPER}"
+          ALPACA_BASE_URL: "${ALPACA_BASE_URL}"
+          ALPACA_KEY_ID: "${ALPACA_KEY_ID}"
+          ALPACA_SECRET_KEY: "${ALPACA_SECRET_KEY}"
+        triggers:
+          - name: weekday-5pm
+            sourceType: scheduler
+            sourceDetails:
+              cron: "0 23 * * 1-5"

@@ -3,11 +3,19 @@
 # - Success: sends status=up with run duration
 # - Failure: sends status=down with exit code
 
-echo "[$(date)] Running ETF Trend Algo..."
-
 set -euo pipefail
 set -x
 export PYTHONUNBUFFERED=1
+
+RUN_LOG_FILE="${RUN_LOG_FILE:-/tmp/etf-volatility-harvest.log}"
+mkdir -p "$(dirname "$RUN_LOG_FILE")"
+touch "$RUN_LOG_FILE"
+
+# Mirror all script output to stdout so `docker run` emits it to the droplet log,
+# while also keeping an in-container copy for direct inspection if needed.
+exec > >(tee -a "$RUN_LOG_FILE") 2>&1
+
+echo "[$(date -Is)] Running ETF Trend Algo..."
 
 # ----------------------------
 # Load env (if present)
