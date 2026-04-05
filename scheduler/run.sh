@@ -15,7 +15,7 @@ touch "$RUN_LOG_FILE"
 # while also keeping an in-container copy for direct inspection if needed.
 exec > >(tee -a "$RUN_LOG_FILE") 2>&1
 
-echo "[$(date -Is)] Running ETF Trend Algo..."
+echo "[$(date -Is)] Running ETF Volatility Harvest Algo..."
 
 # ----------------------------
 # Load env (if present)

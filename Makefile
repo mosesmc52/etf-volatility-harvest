@@ -9,7 +9,7 @@ DOCKER_COMPOSE ?= $(DOCKER) compose
 
 DO_FN_DIR ?= infra/do-functions
 DO_FN_ENV ?= $(DO_FN_DIR)/.env
-DO_FN_NAME ?= launcher/etf-trend-monitor
+DO_FN_NAME ?= launcher/etf-volatility-harvest
 
 DROPLET_USER ?= root
 DROPLET_LOG_FILE ?= /var/log/job.log
