@@ -60,6 +60,7 @@ write_files:
       ALPACA_KEY_ID={env.get("ALPACA_KEY_ID", "")}
       ALPACA_SECRET_KEY={env.get("ALPACA_SECRET_KEY", "")}
       SPACES_KEY={env.get("SPACES_KEY", "")}
+      SPACES_SECRET={env.get("SPACES_SECRET", "")}
       SPACES_BUCKET={env.get("SPACES_BUCKET", "")}
       SPACES_REGION={env.get("SPACES_REGION", "")}
       SPACES_OBJECT_KEY_PATH={env.get("SPACES_OBJECT_KEY_PATH", "")}
@@ -167,6 +168,7 @@ def main(event, context):
                 "ALPACA_KEY_ID": optional_env("ALPACA_KEY_ID"),
                 "ALPACA_SECRET_KEY": optional_env("ALPACA_SECRET_KEY"),
                 "SPACES_KEY": optional_env("SPACES_KEY"),
+                "SPACES_SECRET": optional_env("SPACES_SECRET"),
                 "SPACES_BUCKET": optional_env("SPACES_BUCKET"),
                 "SPACES_REGION": optional_env("SPACES_REGION"),
                 "SPACES_OBJECT_KEY_PATH": optional_env("SPACES_OBJECT_KEY_PATH"),
